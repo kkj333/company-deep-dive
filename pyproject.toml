@@ -22,7 +22,6 @@ test = [
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
 ]
@@ -41,13 +40,14 @@ addopts = "-v --cov=company_deep_dive --cov-report=html"
 source = ["src/company_deep_dive"]
 omit = ["*/tests/*"]
 
-[tool.black]
-line-length = 100
-target-version = ["py311"]
-
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.format]
+# Black互換のフォーマット設定
+quote-style = "double"
+indent-style = "space"
 
 [tool.mypy]
 python_version = "3.11"

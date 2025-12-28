@@ -96,19 +96,24 @@ uv run pytest --cov --cov-report=html
 
 ### コード品質チェック
 
-コードをフォーマット（Black）：
+コードをフォーマット（Ruff）：
 ```bash
-uv run black .
-```
-
-型チェック（mypy）：
-```bash
-uv run mypy utils/
+uv run ruff format .
 ```
 
 リント（Ruff）：
 ```bash
 uv run ruff check .
+```
+
+型チェック（mypy）：
+```bash
+uv run mypy src/
+```
+
+全部まとめて実行：
+```bash
+uv run ruff format . && uv run ruff check . && uv run mypy src/
 ```
 
 ## 🛠️ 開発
