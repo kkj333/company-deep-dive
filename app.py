@@ -12,8 +12,22 @@ st.title("📊 企業詳細分析レポート")
 st.markdown("---")
 
 # サイドバー
-st.sidebar.title("ナビゲーション")
-st.sidebar.markdown("左側のメニューからページを選択してください")
+st.sidebar.title("📋 ナビゲーション")
+
+# ページリンクを作成
+st.sidebar.markdown("""
+### 📊 分析ページ
+
+- [📊 企業概要](pages/01_企業概要)
+- [💰 財務分析](pages/02_財務分析)
+- [📈 経営指標](pages/03_経営指標)
+- [🏢 事業セグメント](pages/04_事業セグメント)
+- [⚠️ リスク分析](pages/05_リスク分析)
+
+---
+""")
+
+st.sidebar.markdown("**💡 ヒント:** 上のメニューからページを選択できます")
 
 # メインコンテンツ
 col1, col2, col3 = st.columns(3)

@@ -23,10 +23,8 @@ Streamlitで有価証券報告書を分析する企業詳細分析レポート�
 uv sync
 
 # Streamlitアプリを実行
-uv run streamlit run streamlit_app.py
+uv run streamlit run app.py
 ```
-
-**注意:** Streamlit Cloud でのデプロイでは、自動的に `streamlit_app.py` が認識されます。
 
 ## ☁️ Streamlit Cloud へのデプロイ
 
@@ -34,7 +32,7 @@ uv run streamlit run streamlit_app.py
 2. [Streamlit Cloud](https://streamlit.io/cloud) にアクセス
 3. 「New app」をクリック
 4. リポジトリを選択
-5. **Main file path** は自動的に `streamlit_app.py` が選択される
+5. **Main file path** に `app.py` を指定
 6. 「Deploy」をクリック
 
 依存関係は `pyproject.toml` から自動的に読み込まれます。
@@ -43,30 +41,35 @@ uv run streamlit run streamlit_app.py
 
 ```
 company-deep-dive/
-├── streamlit_app.py                # Streamlit Cloud用エントリーポイント
-├── src/
-│   └── company_deep_dive/          # メインパッケージ
-│       ├── __init__.py
-│       ├── app.py                  # メインアプリケーション
-│       ├── pages/                  # マルチページアプリ
-│       │   ├── 01_📊_企業概要.py
-│       │   ├── 02_💰_財務分析.py
-│       │   ├── 03_📈_経営指標.py
-│       │   ├── 04_🏢_事業セグメント.py
-│       │   └── 05_⚠️_リスク分析.py
-│       └── utils/                  # ユーティリティモジュール
-│           ├── __init__.py
-│           ├── pdf_parser.py      # PDF解析
-│           └── data_processor.py   # データ処理
+├── app.py                          # Streamlitメインアプリケーション
+├── pages/                          # マルチページアプリ
+│   ├── 01_📊_企業概要.py
+│   ├── 02_💰_財務分析.py
+│   ├── 03_📈_経営指標.py
+│   ├── 04_🏢_事業セグメント.py
+│   └── 05_⚠️_リスク分析.py
+├── utils/                          # ユーティリティモジュール
+│   ├── __init__.py
+│   ├── pdf_parser.py               # PDF解析
+│   └── data_processor.py            # データ処理
+├── scripts/                        # ユーティリティスクリプト
+│   ├── extract_financials.py       # 財務データ抽出
+│   └── extract_pl.py               # PL抽出
 ├── tests/                          # テストモジュール
 │   ├── __init__.py
 │   ├── test_pdf_parser.py
 │   └── test_data_processor.py
-├── .streamlit/
-│   └── config.toml                 # Streamlit設定
+├── data/                           # 抽出済みCSVデータ
+│   ├── financial_summary.csv
+│   ├── segment_data.csv
+│   ├── consolidated_pl.csv
+│   └── company_history.csv
 ├── documents/                      # 有価証券報告書置き場
 │   └── カナレ電気有価証券報告書.pdf
-├── pyproject.toml                  # uv設定
+├── .streamlit/
+│   └── config.toml                 # Streamlit設定
+├── .gitignore
+├── pyproject.toml                  # uv依存関係設定
 └── README.md
 ```
 
@@ -108,25 +111,37 @@ uv run ruff check .
 
 型チェック（mypy）：
 ```bash
-uv run mypy src/
+uv run mypy .
 ```
 
 全部まとめて実行：
 ```bash
-uv run ruff format . && uv run ruff check . && uv run mypy src/
+uv run ruff format . && uv run ruff check . && uv run mypy .
 ```
 
 ## 🛠️ 開発
 
 ### 現在の実装状況
 
-- [x] プロジェクト構成
+- [x] プロジェクト構成（フラット構造）
 - [x] Streamlitアプリケーション基本設定
 - [x] マルチページアプリのテンプレート
 - [x] テスト構造とテストケース
-- [ ] PDFからのデータ抽出機能
-- [ ] 財務データの可視化
-- [ ] 各ページの詳細実装
+- [x] PDFからのデータ抽出機能
+  - [x] テキスト抽出
+  - [x] 表抽出
+  - [x] 企業情報抽出
+- [x] 財務データのCSV化
+  - [x] 財務サマリー
+  - [x] セグメントデータ
+  - [x] 連結損益計算書（PL）
+  - [x] 企業沿革
+- [x] 財務データの可視化
+  - [x] 企業概要ページ
+  - [x] 財務分析ページ
+- [ ] 経営指標ページの詳細実装
+- [ ] 事業セグメントページの詳細実装
+- [ ] リスク分析ページの詳細実装
 
 ## 📝 ライセンス
 

@@ -4,7 +4,9 @@ PDF パーサーのテスト
 
 import pytest
 from pathlib import Path
-from company_deep_dive.utils.pdf_parser import SecReportParser, get_documents_dir, list_pdf_files
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.pdf_parser import SecReportParser, get_documents_dir, list_pdf_files
 
 
 class TestSecReportParser:

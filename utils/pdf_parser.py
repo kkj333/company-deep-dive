@@ -72,10 +72,8 @@ def get_documents_dir() -> Path:
     # プロジェクトルート/documents を取得
     # __file__ -> utils/pdf_parser.py
     # .parent -> utils/
-    # .parent.parent -> company_deep_dive/
-    # .parent.parent.parent -> src/
-    # .parent.parent.parent.parent -> プロジェクトルート/
-    return Path(__file__).parent.parent.parent.parent / "documents"
+    # .parent.parent -> プロジェクトルート/
+    return Path(__file__).parent.parent / "documents"
 
 
 def list_pdf_files() -> List[Path]:

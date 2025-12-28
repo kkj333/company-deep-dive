@@ -11,8 +11,6 @@ dependencies = [
     "pdfplumber>=0.10.0",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/company_deep_dive"]
 
 [project.optional-dependencies]
 test = [
@@ -26,19 +24,14 @@ dev = [
     "mypy>=1.5.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-pythonpath = ["src"]
-addopts = "-v --cov=company_deep_dive --cov-report=html"
+addopts = "-v --cov-report=html"
 
 [tool.coverage.run]
-source = ["src/company_deep_dive"]
-omit = ["*/tests/*"]
+source = ["."]
+omit = ["*/tests/*", "*/venv/*", "*/.venv/*"]
 
 [tool.ruff]
 line-length = 100
@@ -53,4 +46,3 @@ indent-style = "space"
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
-mypy_path = "src"

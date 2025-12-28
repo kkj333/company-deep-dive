@@ -4,7 +4,10 @@
 
 import pytest
 import pandas as pd
-from company_deep_dive.utils.data_processor import (
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.data_processor import (
     FinancialDataProcessor,
     SegmentAnalyzer,
     RiskAnalyzer,
