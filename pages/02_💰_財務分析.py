@@ -54,7 +54,7 @@ with tab1:
                     with cols[i]:
                         st.metric(
                             label=item,
-                            value=f"¥{val_2024:,.0f}M",
+                            value=f"¥{val_2024:,.0f}百万円",
                             delta=f"{change_pct:.1f}%",
                             delta_color="normal" if change_pct >= 0 else "inverse"
                         )
