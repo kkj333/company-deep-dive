@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 from pathlib import Path
 
 st.set_page_config(
@@ -68,7 +69,25 @@ with tab1:
 
                 # チャート用データを準備（単位：百万円）
                 chart_data = key_data.set_index("科目")[["2023年12月", "2024年12月"]]
-                st.bar_chart(chart_data)
+
+                # 水平棒グラフで表示
+                fig = go.Figure()
+                for col in chart_data.columns:
+                    fig.add_trace(go.Bar(
+                        y=chart_data.index,
+                        x=chart_data[col],
+                        name=col,
+                        orientation='h'
+                    ))
+
+                fig.update_layout(
+                    title="主要科目の前年比較（2023年 vs 2024年）",
+                    xaxis_title="金額（百万円）",
+                    yaxis_title="科目",
+                    height=400,
+                    barmode='group'
+                )
+                st.plotly_chart(fig, use_container_width=True)
                 st.caption("※ グラフの単位は百万円です")
 
                 # 変化率を表示
