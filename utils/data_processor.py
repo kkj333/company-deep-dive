@@ -119,11 +119,11 @@ class FinancialDataProcessor:
             ratios["売上高営業利益率"] = (op_profit / sales) * 100
         
         avg_assets = (total_assets_2024 + total_assets_2023) / 2
-        if avg_assets > 0:
+        if avg_assets > 0 and not pd.isna(avg_assets):
             ratios["ROA（総資産利益率）"] = (net_income / avg_assets) * 100
 
         avg_net_assets = (net_assets_2024 + net_assets_2023) / 2
-        if avg_net_assets > 0:
+        if avg_net_assets > 0 and not pd.isna(avg_net_assets):
             ratios["ROE（自己資本利益率）"] = (net_income / avg_net_assets) * 100
 
         # 安全性指標

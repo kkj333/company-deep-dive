@@ -59,7 +59,12 @@ try:
     # 2. ROA（総資産利益率） - 計算
     net_income = get_row_data("親会社株主に帰属する当期純")
     total_assets = get_row_data("総資産額")
-    roa_data = (net_income / total_assets) * 100 if net_income is not None and total_assets is not None else None
+    if net_income is not None and total_assets is not None:
+        # ROAは平均総資産を使用（前年度と当年度の平均）
+        avg_total_assets = total_assets.rolling(window=2).mean()
+        roa_data = (net_income / avg_total_assets) * 100
+    else:
+        roa_data = None
 
     # 3. 営業利益率 - 計算（営業利益がないため経常利益で代替）
     ordinary_income = get_row_data("経常利益")
