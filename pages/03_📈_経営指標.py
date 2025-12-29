@@ -29,6 +29,9 @@ try:
     # データを読み込む
     df_summary = pd.read_csv(financial_summary_csv)
 
+    # CSVの項目名から改行を削除してクリーンアップ
+    df_summary.iloc[:, 0] = df_summary.iloc[:, 0].str.replace("\n", "").str.strip()
+
     # financial_summary.csvから行を取得するヘルパー関数
     def get_row_data(keyword):
         """キーワードで行を検索し、数値データを返す"""
@@ -54,13 +57,13 @@ try:
     roe_data = get_row_data("自己資本利益率")
 
     # 2. ROA（総資産利益率） - 計算
-    net_income = get_row_data("親会社株主に帰属する当期純利益")
+    net_income = get_row_data("親会社株主に帰属する当期純")
     total_assets = get_row_data("総資産額")
     roa_data = (net_income / total_assets) * 100 if net_income is not None and total_assets is not None else None
 
     # 3. 営業利益率 - 計算（営業利益がないため経常利益で代替）
     ordinary_income = get_row_data("経常利益")
-    sales = get_row_data("売上高")
+    sales = get_row_data("売上高 （千円")
     operating_margin_data = (ordinary_income / sales) * 100 if ordinary_income is not None and sales is not None else None
 
     # 4. 自己資本比率 - CSVから取得
