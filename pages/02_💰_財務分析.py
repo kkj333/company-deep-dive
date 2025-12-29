@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
+import sys
+
+# プロジェクトルートをPythonパスに追加
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.data_processor import FinancialDataProcessor
 
 st.set_page_config(
     page_title="財務分析",
@@ -48,8 +53,26 @@ with tab1:
 
             # 詳細テーブル表示
             st.subheader("詳細P/L（単位：千円）")
-            st.caption("※ テーブル内の数値は千円単位です")
-            st.dataframe(df_pl, use_container_width=True, height=600)
+            st.caption("※ テーブル内の数値は千円単位です。重要項目は太字で強調されています。")
+
+            # データのクリーンアップと整形
+            df_pl_formatted = FinancialDataProcessor.format_financial_dataframe(df_pl)
+
+            # 重要項目のインデックスを取得（太字用）
+            bold_items = ["売上高", "売上総利益", "営業利益", "経常利益", "税金等調整前当期純利益", "当期純利益", "親会社株主に帰属する当期純利益"]
+
+            # Streamlitのデータフレーム表示設定
+            st.dataframe(
+                df_pl_formatted,
+                use_container_width=True,
+                height=600,
+                column_config={
+                    "科目": st.column_config.TextColumn("科目", width="medium"),
+                    "2023年12月": st.column_config.NumberColumn("2023年12月", format="%d"),
+                    "2024年12月": st.column_config.NumberColumn("2024年12月", format="%d"),
+                },
+                hide_index=True
+            )
 
             st.markdown("---")
 

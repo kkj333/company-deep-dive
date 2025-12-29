@@ -12,6 +12,58 @@ class FinancialDataProcessor:
     """財務データ処理クラス"""
 
     @staticmethod
+    def clean_financial_value(val: Any) -> float:
+        """
+        財務数値をクリーンアップしてfloatに変換
+        「△1,234」-> -1234.0
+        「1,234」 -> 1234.0
+        「－」 -> 0.0
+        """
+        if pd.isna(val) or val == "－" or val == "-":
+            return 0.0
+        if isinstance(val, (int, float)):
+            return float(val)
+
+        s_val = str(val).replace(",", "").strip()
+        if s_val.startswith("△"):
+            return -float(s_val[1:])
+        try:
+            return float(s_val)
+        except ValueError:
+            return 0.0
+
+    @staticmethod
+    def format_financial_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        財務データフレームをクリーンアップし、階層構造のためのインデントを追加
+        """
+        df_formatted = df.copy()
+
+        # 数値列をクリーンアップ
+        for col in df_formatted.columns:
+            if col != "科目":
+                df_formatted[col] = df_formatted[col].apply(FinancialDataProcessor.clean_financial_value)
+
+        # 科目名にインデントを追加するルール
+        indent_items = [
+            "売上原価", "販売費及び一般管理費",
+            "受取利息", "受取配当金", "不動産賃貸料", "為替差益", "投資事業組合運用益", "固定資産売却益", "物品売却益",
+            "支払利息", "売上債権売却損", "不動産賃貸原価", "投資事業組合運用損", "為替差損", "固定資産除却損",
+            "投資有価証券売却益", "投資有価証券売却損",
+            "法人税、住民税及び事業税", "過年度法人税等", "法人税等調整額"
+        ]
+
+        def apply_style(item):
+            item = item.strip()
+            if item in indent_items:
+                return f"　　{item}"  # 全角スペースでインデント
+            return item
+
+        df_formatted["科目"] = df_formatted["科目"].apply(apply_style)
+
+        return df_formatted
+
+    @staticmethod
     def calculate_financial_ratios(pl_data: pd.DataFrame, bs_data: pd.DataFrame) -> Dict[str, float]:
         """
         財務比率を計算
