@@ -298,17 +298,62 @@ with tab3:
 
             st.markdown("---")
 
-            st.subheader("💡 主要指標")
-            # 営業CF、投資CF、財務CFを抽出
-            operating_cf = float(
+            st.subheader("📈 キャッシュフロー分析")
+
+            # 営業CF、投資CF、財務CFを抽出（両年度）
+            operating_cf_2023 = float(
+                df_cf[df_cf["科目"] == "営業活動によるキャッシュ・フロー"]["2023年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            operating_cf_2024 = float(
                 df_cf[df_cf["科目"] == "営業活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
             )
-            investing_cf = float(
+            investing_cf_2023 = float(
+                df_cf[df_cf["科目"] == "投資活動によるキャッシュ・フロー"]["2023年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            investing_cf_2024 = float(
                 df_cf[df_cf["科目"] == "投資活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
             )
-            financing_cf = float(
+            financing_cf_2023 = float(
+                df_cf[df_cf["科目"] == "財務活動によるキャッシュ・フロー"]["2023年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            financing_cf_2024 = float(
                 df_cf[df_cf["科目"] == "財務活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
             )
+
+            # 3つのC/Fの比較グラフ
+            fig_cf = go.Figure()
+
+            cf_categories = ["営業CF", "投資CF", "財務CF"]
+            fig_cf.add_trace(go.Bar(
+                name="2023年12月",
+                x=cf_categories,
+                y=[operating_cf_2023/1000, investing_cf_2023/1000, financing_cf_2023/1000],
+                marker_color="lightsteelblue"
+            ))
+            fig_cf.add_trace(go.Bar(
+                name="2024年12月",
+                x=cf_categories,
+                y=[operating_cf_2024/1000, investing_cf_2024/1000, financing_cf_2024/1000],
+                marker_color="steelblue"
+            ))
+
+            fig_cf.update_layout(
+                title="キャッシュフロー分析（前年比較、単位：百万円）",
+                xaxis_title="活動区分",
+                yaxis_title="キャッシュフロー（百万円）",
+                barmode='group',
+                height=400,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+
+            st.plotly_chart(fig_cf, use_container_width=True)
+
+            st.markdown("---")
+
+            st.subheader("💡 主要指標")
+            operating_cf = operating_cf_2024
+            investing_cf = investing_cf_2024
+            financing_cf = financing_cf_2024
             ending_cash = float(
                 df_cf[df_cf["科目"] == "現金及び現金同等物の期末残高"]["2024年12月"].values[0].replace(",", "")
             )
