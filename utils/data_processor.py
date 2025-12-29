@@ -46,11 +46,23 @@ class FinancialDataProcessor:
 
         # 科目名にインデントを追加するルール
         indent_items = [
+            # P/L items
             "売上原価", "販売費及び一般管理費",
             "受取利息", "受取配当金", "不動産賃貸料", "為替差益", "投資事業組合運用益", "固定資産売却益", "物品売却益",
             "支払利息", "売上債権売却損", "不動産賃貸原価", "投資事業組合運用損", "為替差損", "固定資産除却損",
             "投資有価証券売却益", "投資有価証券売却損",
-            "法人税、住民税及び事業税", "過年度法人税等", "法人税等調整額"
+            "法人税、住民税及び事業税", "過年度法人税等", "法人税等調整額",
+            # B/S items
+            "現金及び預金", "受取手形及び売掛金", "商品及び製品", "仕掛品", "原材料及び貯蔵品", "貸倒引当金",
+            "建物及び構築物", "減価償却累計額", "建物及び構築物（純額）",
+            "機械装置及び運搬具", "機械装置及び運搬具（純額）",
+            "工具、器具及び備品", "工具、器具及び備品（純額）",
+            "土地", "リース資産", "リース資産（純額）",
+            "無形固定資産", "投資有価証券", "繰延税金資産",
+            "買掛金", "未払金", "未払法人税等", "賞与引当金", "役員賞与引当金",
+            "繰延税金負債", "役員退職慰労引当金", "退職給付に係る負債",
+            "資本金", "資本剰余金", "利益剰余金", "自己株式",
+            "その他有価証券評価差額金", "繰延ヘッジ損益", "土地再評価差額金", "為替換算調整勘定"
         ]
 
         def apply_style(item):
@@ -64,7 +76,7 @@ class FinancialDataProcessor:
         return df_formatted
 
     @staticmethod
-    def calculate_financial_ratios(pl_data: pd.DataFrame, bs_data: pd.DataFrame) -> Dict[str, float]:
+    def calculate_financial_ratios(pl_data: pd.DataFrame, bs_data: pd.DataFrame) -> Dict[str, Any]:
         """
         財務比率を計算
 
@@ -73,10 +85,54 @@ class FinancialDataProcessor:
             bs_data: 貸借対照表データ
 
         Returns:
-            計算された財務比率
+            計算された財務比率の辞書
         """
         ratios = {}
-        # TODO: 実装予定
+
+        def get_pl_val(item, year="2024年12月"):
+            row = pl_data[pl_data["科目"] == item]
+            if not row.empty:
+                return FinancialDataProcessor.clean_financial_value(row[year].values[0])
+            return 0
+
+        def get_bs_val(item, year="2024年12月"):
+            row = bs_data[bs_data["科目"] == item]
+            if not row.empty:
+                return FinancialDataProcessor.clean_financial_value(row[year].values[0])
+            return 0
+
+        # 2024年の値を取得
+        sales = get_pl_val("売上高")
+        op_profit = get_pl_val("営業利益")
+        net_income = get_pl_val("当期純利益")
+
+        total_assets_2024 = get_bs_val("資産合計")
+        total_assets_2023 = get_bs_val("資産合計", "2023年12月")
+        net_assets_2024 = get_bs_val("純資産合計")
+        net_assets_2023 = get_bs_val("純資産合計", "2023年12月")
+        
+        current_assets = get_bs_val("流動資産合計")
+        current_liabilities = get_bs_val("流動負債合計")
+
+        # 収益性指標
+        if sales > 0:
+            ratios["売上高営業利益率"] = (op_profit / sales) * 100
+        
+        avg_assets = (total_assets_2024 + total_assets_2023) / 2
+        if avg_assets > 0:
+            ratios["ROA（総資産利益率）"] = (net_income / avg_assets) * 100
+
+        avg_net_assets = (net_assets_2024 + net_assets_2023) / 2
+        if avg_net_assets > 0:
+            ratios["ROE（自己資本利益率）"] = (net_income / avg_net_assets) * 100
+
+        # 安全性指標
+        if total_assets_2024 > 0:
+            ratios["自己資本比率"] = (net_assets_2024 / total_assets_2024) * 100
+        
+        if current_liabilities > 0:
+            ratios["流動比率"] = (current_assets / current_liabilities) * 100
+
         return ratios
 
     @staticmethod

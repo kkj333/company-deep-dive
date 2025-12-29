@@ -240,8 +240,102 @@ with tab2:
         )
 
 with tab3:
-    st.subheader("キャッシュフロー計算書（C/F）")
-    st.info("PDFから抽出したキャッシュフロー計算書データを表示予定")
+    st.subheader("連結キャッシュ・フロー計算書（C/F）")
+
+    cf_csv = data_dir / "consolidated_cf.csv"
+    if cf_csv.exists():
+        try:
+            df_cf = pd.read_csv(cf_csv)
+
+            st.caption("※ テーブル内の数値は千円単位です")
+
+            # セクション分けして表示
+            st.write("**営業活動によるキャッシュ・フロー**")
+            operating_items = [
+                "税金等調整前当期純利益",
+                "減価償却費",
+                "小計",
+                "営業活動によるキャッシュ・フロー",
+            ]
+            operating_rows = df_cf[df_cf["科目"].isin(operating_items)]
+            if not operating_rows.empty:
+                st.dataframe(operating_rows, use_container_width=True, hide_index=True)
+
+            st.write("**投資活動によるキャッシュ・フロー**")
+            investing_items = [
+                "定期預金の預入による支出",
+                "定期預金の払戻による収入",
+                "有形固定資産の取得による支出",
+                "投資有価証券の取得による支出",
+                "投資活動によるキャッシュ・フロー",
+            ]
+            investing_rows = df_cf[df_cf["科目"].isin(investing_items)]
+            if not investing_rows.empty:
+                st.dataframe(investing_rows, use_container_width=True, hide_index=True)
+
+            st.write("**財務活動によるキャッシュ・フロー**")
+            financing_items = [
+                "配当金の支払額",
+                "リース債務の返済による支出",
+                "財務活動によるキャッシュ・フロー",
+            ]
+            financing_rows = df_cf[df_cf["科目"].isin(financing_items)]
+            if not financing_rows.empty:
+                st.dataframe(financing_rows, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            st.write("**現金及び現金同等物の増減額**")
+            cash_items = [
+                "現金及び現金同等物に係る換算差額",
+                "現金及び現金同等物の増減額（△は減少）",
+                "現金及び現金同等物の期首残高",
+                "現金及び現金同等物の期末残高",
+            ]
+            cash_rows = df_cf[df_cf["科目"].isin(cash_items)]
+            if not cash_rows.empty:
+                st.dataframe(cash_rows, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            st.subheader("💡 主要指標")
+            # 営業CF、投資CF、財務CFを抽出
+            operating_cf = float(
+                df_cf[df_cf["科目"] == "営業活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            investing_cf = float(
+                df_cf[df_cf["科目"] == "投資活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            financing_cf = float(
+                df_cf[df_cf["科目"] == "財務活動によるキャッシュ・フロー"]["2024年12月"].values[0].replace(",", "").replace("△", "-")
+            )
+            ending_cash = float(
+                df_cf[df_cf["科目"] == "現金及び現金同等物の期末残高"]["2024年12月"].values[0].replace(",", "")
+            )
+
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                color = "🟢" if operating_cf >= 0 else "🔴"
+                st.metric("営業CF（2024年）", f"{color} ¥{operating_cf/1000:,.1f}百万円")
+            with col2:
+                color = "🟢" if investing_cf >= 0 else "🔴"
+                st.metric("投資CF（2024年）", f"{color} ¥{investing_cf/1000:,.1f}百万円")
+            with col3:
+                color = "🟢" if financing_cf >= 0 else "🔴"
+                st.metric("財務CF（2024年）", f"{color} ¥{financing_cf/1000:,.1f}百万円")
+            with col4:
+                st.metric("期末現金残高（2024年）", f"¥{ending_cash/1000:,.1f}百万円")
+
+        except Exception as e:
+            st.error(f"データの読み込みに失敗しました: {e}")
+    else:
+        st.warning(
+            "💾 consolidated_cf.csv が見つかりません。\n\n"
+            "以下を実行してください:\n"
+            "```bash\n"
+            "uv run python scripts/extract_cf.py\n"
+            "```"
+        )
 
 st.markdown("---")
 
