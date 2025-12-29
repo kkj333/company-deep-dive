@@ -220,7 +220,7 @@ class RiskAnalyzer:
     """リスク分析クラス"""
 
     @staticmethod
-    def extract_risk_factors(text: str) -> List[str]:
+    def extract_risk_factors(text: str) -> List[Dict[str, str]]:
         """
         テキストからリスク要因を抽出
 
@@ -228,14 +228,54 @@ class RiskAnalyzer:
             text: 抽出されたテキスト
 
         Returns:
-            リスク要因のリスト
+            リスク要因のリスト（タイトルと内容の辞書）
         """
-        risks = []
-        # TODO: 実装予定
-        return risks
+        import re
+
+        # 「【事業等のリスク】」セクションを探す
+        risk_section_match = re.search(r"【事業等のリスク】(.*?)(?=【|\Z)", text, re.DOTALL)
+
+        if not risk_section_match:
+            return []
+
+        section_text = risk_section_match.group(1)
+
+        # 個別のリスク項目を抽出（括弧付き番号: (１)、(２)など）
+        risk_items = []
+
+        # リスク項目の検出パターン: (１)（括弧番号）で始まる行とそれに続く内容
+        lines = section_text.split("\n")
+        current_title = ""
+        current_content = []
+
+        for line in lines:
+            # リスク項目のタイトル行を検出: (１)タイトルのような形式
+            title_match = re.match(r"^\(\d+\)(.+)$", line)
+            if title_match:
+                # 前の項目を保存
+                if current_title:
+                    risk_items.append({
+                        "title": current_title,
+                        "content": "\n".join(current_content).strip()
+                    })
+                # 新しい項目を開始
+                current_title = title_match.group(1).strip()
+                current_content = []
+            elif current_title and line.strip():
+                # タイトルが設定されていて、空白でない行なら内容に追加
+                current_content.append(line)
+
+        # 最後の項目を追加
+        if current_title:
+            risk_items.append({
+                "title": current_title,
+                "content": "\n".join(current_content).strip()
+            })
+
+        return risk_items
 
     @staticmethod
-    def categorize_risks(risks: List[str]) -> Dict[str, List[str]]:
+    def categorize_risks(risks: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
         リスクを分類
 
@@ -243,11 +283,35 @@ class RiskAnalyzer:
             risks: リスク要因のリスト
 
         Returns:
-            分類されたリスク
+            分類情報が追加されたリスクリスト
         """
-        categorized = {}
-        # TODO: 実装予定
-        return categorized
+        categories = {
+            "経営リスク": ["経営", "戦略", "方針", "競合", "人材", "技術"],
+            "市場リスク": ["市場", "需要", "景気", "価格", "為替", "金利"],
+            "業務リスク": ["業務", "運営", "品質", "供給", "災害", "システム", "情報"],
+            "財務リスク": ["財務", "資金", "借入", "格付"],
+            "法令リスク": ["法令", "遵守", "規制", "訴訟", "知的財産", "環境"],
+        }
+
+        categorized_risks = []
+        for risk in risks:
+            title = risk["title"]
+            content = risk["content"]
+            found_category = "その他"
+
+            # タイトルと内容からキーワードを探す
+            for category, keywords in categories.items():
+                if any(kw in title or kw in content for kw in keywords):
+                    found_category = category
+                    break
+            
+            categorized_risks.append({
+                "category": found_category,
+                "title": title,
+                "content": content
+            })
+
+        return categorized_risks
 
 
 class HistoryExtractor:
