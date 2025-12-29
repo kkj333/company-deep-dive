@@ -394,3 +394,119 @@ class HistoryExtractor:
         df_history.to_csv(history_path, index=False, encoding="utf-8-sig")
 
         return history_path
+
+
+class ManagementPolicyExtractor:
+    """経営方針抽出クラス"""
+
+    @staticmethod
+    def extract_management_policy(text: str) -> List[Dict[str, str]]:
+        """
+        テキストから経営方針を抽出
+
+        Args:
+            text: PDFから抽出されたテキスト
+
+        Returns:
+            経営方針データのリスト
+        """
+        import re
+
+        policies = []
+
+        # 経営方針セクションを探す（複数のパターンに対応）
+        policy_patterns = [
+            r"【経営方針】(.*?)(?=【|第|参考|最後のページ|ページの終わり|\Z)",
+            r"経営方針(.*?)(?=【|第|参考|最後のページ|ページの終わり|\Z)",
+        ]
+
+        policy_text = ""
+        for pattern in policy_patterns:
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                policy_text = match.group(1)
+                break
+
+        if not policy_text:
+            return policies
+
+        # 経営方針をセクションごとに分割
+        # セクションは通常「１．」「２．」などの番号で区切られている
+        sections = re.split(r"(?=\n\s*[０-９１-９]\s*[．、])", policy_text)
+
+        for section in sections:
+            section = section.strip()
+            if not section:
+                continue
+
+            # 見出しと内容を分割
+            lines = section.split("\n", 1)
+            if len(lines) >= 1:
+                title = lines[0].strip()
+                content = "\n".join(lines[1:]).strip() if len(lines) > 1 else ""
+
+                # 見出しをクリーンアップ（番号を削除）
+                title_cleaned = re.sub(r"^[０-９１-９\s．、]+", "", title).strip()
+
+                if title_cleaned and content:
+                    policies.append({
+                        "タイトル": title_cleaned,
+                        "内容": content
+                    })
+
+        return policies
+
+    @staticmethod
+    def extract_basic_policy_statement(text: str) -> str:
+        """
+        基本的な経営方針ステートメント（1段落）を抽出
+
+        Args:
+            text: PDFから抽出されたテキスト
+
+        Returns:
+            経営方針ステートメント
+        """
+        import re
+
+        # 経営方針セクションを探す
+        patterns = [
+            r"【経営方針】\s*(.*?)(?=【|第|\Z)",
+            r"経営方針\s*(.*?)(?=【|第|１\s*[．、]|\Z)",
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                policy_text = match.group(1).strip()
+                # 最初の段落（改行で区切られた部分）を取得
+                first_paragraph = policy_text.split("\n\n")[0].strip()
+                if first_paragraph:
+                    # 余分なスペースを削除
+                    return re.sub(r"\s+", " ", first_paragraph)
+
+        return ""
+
+    @staticmethod
+    def export_policy_to_csv(policies: List[Dict[str, str]], output_dir: Path) -> Path:
+        """
+        経営方針データをCSVにエクスポート
+
+        Args:
+            policies: 経営方針データのリスト
+            output_dir: 出力ディレクトリ
+
+        Returns:
+            保存されたCSVファイルのパス
+        """
+        if not policies:
+            return None
+
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        df_policy = pd.DataFrame(policies)
+        policy_path = output_dir / "management_policy.csv"
+        df_policy.to_csv(policy_path, index=False, encoding="utf-8-sig")
+
+        return policy_path
