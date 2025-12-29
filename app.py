@@ -24,7 +24,7 @@ with col2:
     st.metric("業種", "電気機器")
 
 with col3:
-    st.metric("上場市場", "東証プライム")
+    st.metric("上場市場", "東証スタンダード")
 
 st.markdown("---")
 
