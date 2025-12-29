@@ -24,29 +24,30 @@ with tab1:
         try:
             df_pl = pd.read_csv(pl_csv)
 
-            # 主要指標をメトリクスで表示
+            # 主要指標をメトリクスで表示（単位：百万円）
             col1, col2, col3, col4 = st.columns(4)
 
             with col1:
                 sales_2024 = float(df_pl[df_pl["科目"] == "売上高"]["2024年12月"].values[0].replace(",", ""))
-                st.metric("売上高（2024年）", f"¥{sales_2024/1000:.1f}B")
+                st.metric("売上高（2024年）", f"¥{sales_2024/1000:.1f}百万円")
 
             with col2:
                 op_profit_2024 = float(df_pl[df_pl["科目"] == "営業利益"]["2024年12月"].values[0].replace(",", ""))
-                st.metric("営業利益（2024年）", f"¥{op_profit_2024/1000:.1f}B")
+                st.metric("営業利益（2024年）", f"¥{op_profit_2024/1000:.1f}百万円")
 
             with col3:
                 ord_income_2024 = float(df_pl[df_pl["科目"] == "経常利益"]["2024年12月"].values[0].replace(",", ""))
-                st.metric("経常利益（2024年）", f"¥{ord_income_2024/1000:.1f}B")
+                st.metric("経常利益（2024年）", f"¥{ord_income_2024/1000:.1f}百万円")
 
             with col4:
                 net_income_2024 = float(df_pl[df_pl["科目"] == "当期純利益"]["2024年12月"].values[0].replace(",", ""))
-                st.metric("当期純利益（2024年）", f"¥{net_income_2024/1000:.1f}B")
+                st.metric("当期純利益（2024年）", f"¥{net_income_2024/1000:.1f}百万円")
 
             st.markdown("---")
 
             # 詳細テーブル表示
             st.subheader("詳細P/L（単位：千円）")
+            st.caption("※ テーブル内の数値は千円単位です")
             st.dataframe(df_pl, use_container_width=True, height=600)
 
             st.markdown("---")
@@ -65,9 +66,10 @@ with tab1:
                     key_data["2024年12月"].str.replace(",", "").astype(float) / 1000
                 )
 
-                # チャート用データを準備
+                # チャート用データを準備（単位：百万円）
                 chart_data = key_data.set_index("科目")[["2023年12月", "2024年12月"]]
                 st.bar_chart(chart_data)
+                st.caption("※ グラフの単位は百万円です")
 
                 # 変化率を表示
                 st.subheader("前年比（%）")
@@ -81,7 +83,7 @@ with tab1:
                     with col1:
                         st.write(f"**{item}**")
                     with col2:
-                        st.write(f"2023: ¥{val_2023:.1f}B")
+                        st.write(f"2023: ¥{val_2023:,.1f}百万円")
                     with col3:
                         color = "🔴" if change_pct < 0 else "🟢"
                         st.write(f"{color} {change_pct:.1f}%")
