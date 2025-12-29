@@ -142,8 +142,99 @@ with tab1:
         )
 
 with tab2:
-    st.subheader("貸借対照表（B/S）")
-    st.info("PDFから抽出した貸借対照表データを表示予定")
+    st.subheader("連結貸借対照表（B/S）")
+
+    bs_csv = data_dir / "consolidated_bs.csv"
+    if bs_csv.exists():
+        try:
+            df_bs = pd.read_csv(bs_csv)
+
+            st.caption("※ テーブル内の数値は千円単位です")
+
+            # セクション分けして表示
+            st.write("**資産の部**")
+            asset_items = [
+                "現金及び預金",
+                "受取手形及び売掛金",
+                "商品及び製品",
+                "仕掛品",
+                "原材料及び貯蔵品",
+                "その他",
+                "貸倒引当金",
+                "流動資産合計",
+            ]
+            asset_rows = df_bs[df_bs["科目"].isin(asset_items)]
+            if not asset_rows.empty:
+                st.dataframe(asset_rows, use_container_width=True, hide_index=True)
+
+            st.write("**固定資産**")
+            fixed_items = [
+                "有形固定資産合計",
+                "無形固定資産",
+                "投資その他の資産合計",
+                "固定資産合計",
+                "資産合計",
+            ]
+            fixed_rows = df_bs[df_bs["科目"].isin(fixed_items)]
+            if not fixed_rows.empty:
+                st.dataframe(fixed_rows, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            st.write("**負債の部**")
+            liab_items = [
+                "流動負債合計",
+                "固定負債合計",
+                "負債合計",
+            ]
+            liab_rows = df_bs[df_bs["科目"].isin(liab_items)]
+            if not liab_rows.empty:
+                st.dataframe(liab_rows, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            st.write("**純資産の部**")
+            equity_items = [
+                "株主資本合計",
+                "その他の包括利益累計額合計",
+                "純資産合計",
+            ]
+            equity_rows = df_bs[df_bs["科目"].isin(equity_items)]
+            if not equity_rows.empty:
+                st.dataframe(equity_rows, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            st.subheader("💡 主要指標")
+            # 資産合計、負債合計、純資産合計を抽出
+            total_assets = float(
+                df_bs[df_bs["科目"] == "資産合計"]["2024年12月"].values[0].replace(",", "")
+            )
+            total_liab = float(
+                df_bs[df_bs["科目"] == "負債合計"]["2024年12月"].values[0].replace(",", "")
+            )
+            total_equity = float(
+                df_bs[df_bs["科目"] == "純資産合計"]["2024年12月"].values[0].replace(",", "")
+            )
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("総資産（2024年）", f"¥{total_assets/1000:.1f}百万円")
+            with col2:
+                st.metric("総負債（2024年）", f"¥{total_liab/1000:.1f}百万円")
+            with col3:
+                st.metric("純資産（2024年）", f"¥{total_equity/1000:.1f}百万円")
+
+        except Exception as e:
+            st.error(f"データの読み込みに失敗しました: {e}")
+    else:
+        st.warning(
+            "💾 consolidated_bs.csv が見つかりません。\n\n"
+            "以下を実行してください:\n"
+            "```bash\n"
+            "uv run python scripts/extract_bs.py\n"
+            "```"
+        )
 
 with tab3:
     st.subheader("キャッシュフロー計算書（C/F）")
